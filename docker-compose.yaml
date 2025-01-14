@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0.33
+    container_name: go-todolist-db
+    ports:
+      - '3006:3306'
+    environment:
+      MYSQL_ROOT_USER: ${TODO_LIST_DB_ROOTUSER}
+      MYSQL_ROOT_PASSWORD: ${TODO_LIST_DB_ROOTPASS}
+      MYSQL_DATABASE: ${TODO_LIST_DB_DATABASE}
+      MYSQL_USER: ${TODO_LIST_DB_USERNAME}
+      MYSQL_PASSWORD: ${TODO_LIST_DB_PASSWORD}
+      TZ: 'Asia/Tokyo'
+    volumes:
+      - go-todolist-db-volume:/var/lib/mysql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+
+volumes:
+  go-todolist-db-volume:
