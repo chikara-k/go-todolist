@@ -15,6 +15,40 @@ import (
 )
 
 func listeners(r *gin.Engine, dbConnection *gorm.DB) {
+	r.POST("/todo/create", func(c *gin.Context) {
+		content := c.PostForm("content")
+		fmt.Println(c.Request.PostForm, content)
+		result := dbConnection.Create(&models.Todo{Content: content})
+		if db.ErrorDB(result, c) {
+			return
+		}
+	})
+
+	r.GET("/todo/list", func(c *gin.Context) {
+		var todos []models.Todo
+		// Get all records
+		result := dbConnection.Find(&todos)
+		if db.ErrorDB(result, c) {
+			return
+		}
+		fmt.Println(json.NewEncoder(os.Stdout).Encode(todos))
+		c.HTML(http.StatusOK, "list.html", gin.H{
+			"title": "Main website",
+			"todos": todos,
+		})
+	})
+
+	r.GET("/todo/get", func(c *gin.Context) {
+		var todo models.Todo
+		id, _ := c.GetQuery("id")
+		result := dbConnection.First(&todo, id)
+		if db.ErrorDB(result, c) {
+			return
+		}
+		fmt.Println(json.NewEncoder(os.Stdout).Encode(todo))
+		c.JSON(http.StatusOK, todo)
+	})
+
 	r.GET("/todo/delete", func(c *gin.Context) {
 		id, _ := c.GetQuery("id")
 		result := dbConnection.Delete(&models.Todo{}, id)
@@ -37,37 +71,6 @@ func listeners(r *gin.Engine, dbConnection *gorm.DB) {
 			return
 		}
 	})
-
-	r.POST("/todo/create", func(c *gin.Context) {
-		content := c.PostForm("content")
-		fmt.Println(c.Request.PostForm, content)
-		result := dbConnection.Create(&models.Todo{Content: content})
-		if db.ErrorDB(result, c) {
-			return
-		}
-	})
-
-	r.GET("/todo/list", func(c *gin.Context) {
-		var todos []models.Todo
-		// Get all records
-		result := dbConnection.Find(&todos)
-		if db.ErrorDB(result, c) {
-			return
-		}
-		fmt.Println(json.NewEncoder(os.Stdout).Encode(todos))
-		c.JSON(http.StatusOK, todos)
-	})
-
-	r.GET("/todo/get", func(c *gin.Context) {
-		var todo models.Todo
-		id, _ := c.GetQuery("id")
-		result := dbConnection.First(&todo, id)
-		if db.ErrorDB(result, c) {
-			return
-		}
-		fmt.Println(json.NewEncoder(os.Stdout).Encode(todo))
-		c.JSON(http.StatusOK, todo)
-	})
 }
 
 func main() {
@@ -83,6 +86,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
+
+	r.LoadHTMLGlob("templates/*")
 
 	listeners(r, dbConnection)
 
