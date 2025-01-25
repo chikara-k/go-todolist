@@ -15,7 +15,7 @@ services:
       TZ: 'Asia/Tokyo'
     volumes:
       - go-todolist-db-volume:/var/lib/mysql
-      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./infra/database/my.cnf:/etc/mysql/conf.d/my.cnf
 
 volumes:
   go-todolist-db-volume:
